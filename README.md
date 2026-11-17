@@ -4,6 +4,8 @@ A responsive, dependency-free lineup planner built with HTML, CSS, and JavaScrip
 
 ## Use
 
+On smaller screens, the roster appears above the live court. Tap its header to collapse or expand it.
+
 The rotation roster controls every assignment. Drag a player's handle to another slot (mouse or touch), or use the up/down arrows. Slots 1–6 are back middle, back left, front left, front middle, front right, and server. Remaining slots form the FIFO bench queue. Courts and the bench display this order without separate assignment controls. Check any number of players in the roster to highlight their jerseys with a gold star on every court. Highlights follow players through rotations and reordering, and are saved and included in lineup exports.
 
 Rotation: **bench → back middle → back left → front left → front middle → front right → server → bench**. With no bench, the server moves directly to back middle. Removing a player shifts later roster slots up; a minimum of six players is required.
