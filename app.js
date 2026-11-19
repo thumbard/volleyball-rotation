@@ -1,8 +1,9 @@
 import { positions, rotate, futureRotations, rosterOrder, reorder, validate, initialLineup } from './rotation.js';
 const $ = id => document.getElementById(id);
 const key = 'sideout-lineup-v1';
-const DEFAULT_PREVIEW_COUNT = 3;
-let previewCount = DEFAULT_PREVIEW_COUNT;
+// Facing the net, list the front row from left to right, then the back row.
+const courtDisplayOrder = [2, 3, 4, 1, 0, 5];
+const sheetPositions = courtDisplayOrder.map(index => index === 5 ? 'Back right / Server' : positions[index]);
 let lineup = initialLineup(), history = [], storageAvailable = true;
 try { const saved = JSON.parse(localStorage.getItem(key)); if (validate(saved)) lineup = saved; } catch { storageAvailable = false; }
 const announce = message => { $('announcement').textContent = message; };
@@ -22,7 +23,7 @@ function button(text, label, action, disabled = false) {
 function drawCourt(target, view) {
   const names = new Map(lineup.players.map(p => [p.id, p.name]));
   target.replaceChildren();
-  for (const index of [2, 3, 4, 1, 0, 5]) {
+  for (const index of courtDisplayOrder) {
     const card = document.createElement('div'); card.className = `position ${index === 5 ? 'server' : ''}`;
     const highlighted = lineup.players.find(p => p.id === view.court[index]).highlighted === true;
     card.classList.toggle('highlighted-player', highlighted);
@@ -39,17 +40,10 @@ function render() {
   drawCourt($('court'), lineup);
   $('upcoming').replaceChildren();
   const maxPreviews = lineup.players.length - 1;
-  $('rotation-count').replaceChildren();
-  for (let count = 1; count <= maxPreviews; count++) {
-    const option = document.createElement('option'); option.value = count; option.textContent = String(count); $('rotation-count').append(option);
-  }
-  const all = document.createElement('option'); all.value = 'all'; all.textContent = `All (${maxPreviews})`; $('rotation-count').append(all);
-  if (previewCount !== 'all') previewCount = Math.min(previewCount, maxPreviews);
-  $('rotation-count').value = String(previewCount);
   $('cycle-note').textContent = `The live lineup repeats after ${lineup.players.length} rotations. There are ${maxPreviews} unique upcoming lineups.`;
-  futureRotations(lineup, previewCount).forEach((future, index) => {
-    const step = index + 1, section = document.createElement('section');
-    const heading = document.createElement('h3'); heading.textContent = `Rotation +${step}`;
+  futureRotations(lineup, 'all').forEach((future, index) => {
+    const step = index + 2, section = document.createElement('section');
+    const heading = document.createElement('h3'); heading.textContent = `Rotation #${step}`;
     const court = document.createElement('div'); court.className = 'court mini-court'; drawCourt(court, future);
     const bench = document.createElement('p'); bench.className = 'hint'; bench.textContent = `Bench: ${future.bench.map(id => names.get(id)).join(' → ') || 'None'}`;
     section.append(heading, court, bench); $('upcoming').append(section);
@@ -116,13 +110,125 @@ function movePlayer(from, to) {
   change(reorder(lineup, from, to), `${name} moved to slot ${to + 1}.`);
   $('roster').children[to]?.querySelector('.drag-handle').focus({ preventScroll: true });
 }
-$('rotation-count').onchange = event => {
-  previewCount = event.target.value === 'all' ? 'all' : Number(event.target.value);
-  render();
+function rotationSheet() {
+  const players = new Map(lineup.players.map(player => [player.id, player]));
+  const order = rosterOrder(lineup);
+  const rows = [lineup, ...futureRotations(lineup, 'all')].map((view, index) => ({
+    label: `Rotation #${index + 1}`,
+    court: view.court,
+    bench: view.bench,
+  }));
+  return { players, order, rows };
+}
+
+function renderPrintSheet() {
+  const { players, order, rows } = rotationSheet();
+  const compact = order.length > 12;
+  const includeHighlights = $('sheet-highlights').checked;
+  const number = new Map(order.map((id, index) => [id, index + 1]));
+  const playerLabel = (id, useNumber = compact) => {
+    const player = players.get(id);
+    return `${useNumber ? number.get(id) : player.name}${includeHighlights && player.highlighted ? ' ★' : ''}`;
+  };
+  const sheet = $('print-rotations');
+  sheet.classList.toggle('compact-print', compact);
+  sheet.classList.toggle('dense-print', order.length > 30 && rows.length > 28);
+  const title = document.createElement('h1');
+  title.textContent = 'Sideout rotation sheet';
+  const note = document.createElement('p');
+  note.textContent = 'The heavy line marks the net. The server is at back right. The next bench player is on the left.';
+  if (includeHighlights && [...players.values()].some(player => player.highlighted)) {
+    note.textContent += ' ★ Highlighted player.';
+    if (compact) note.textContent += ' Highlighted bench numbers are underlined.';
+  }
+
+  const courts = document.createElement('div');
+  courts.className = 'print-courts';
+  for (const { label, court, bench } of rows) {
+    const card = document.createElement('section');
+    card.className = 'print-rotation';
+    const heading = document.createElement('h2');
+    heading.textContent = label;
+    const formation = document.createElement('div');
+    formation.className = 'print-formation';
+    courtDisplayOrder.forEach((index, slot) => {
+      const cell = document.createElement('div');
+      const position = document.createElement('span');
+      position.className = 'sr-only';
+      position.textContent = `${sheetPositions[slot]} · `;
+      cell.append(position, playerLabel(court[index]));
+      formation.append(cell);
+    });
+    const benchLabel = document.createElement('h3');
+    benchLabel.textContent = 'Bench';
+    const benchLine = document.createElement('p');
+    benchLine.className = 'print-bench';
+    for (const id of bench) {
+      const player = document.createElement('span');
+      player.textContent = compact ? number.get(id) : playerLabel(id);
+      if (compact && includeHighlights && players.get(id).highlighted) {
+        player.className = 'print-bench-highlight';
+        const status = document.createElement('span');
+        status.className = 'sr-only';
+        status.textContent = ' (highlighted)';
+        player.append(status);
+      }
+      benchLine.append(player);
+    }
+    if (!bench.length) benchLine.textContent = 'None';
+    card.append(heading, formation, benchLabel, benchLine);
+    courts.append(card);
+  }
+  sheet.replaceChildren(title, note, courts);
+
+  if (compact) {
+    const roster = document.createElement('ol');
+    roster.setAttribute('aria-label', 'Player number key');
+    for (const id of order) {
+      const item = document.createElement('li');
+      item.textContent = playerLabel(id, false);
+      roster.append(item);
+    }
+    sheet.append(roster);
+  }
+}
+
+function downloadFile(content, type, filename) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function csvCell(value) {
+  return `"${value.replaceAll('"', '""')}"`;
+}
+
+$('export-sheet').onclick = () => {
+  const { players, rows } = rotationSheet();
+  const includeHighlights = $('sheet-highlights').checked;
+  const header = ['Rotation', ...sheetPositions, ...lineup.bench.map((_, index) => `Bench ${index + 1}`)];
+  const data = rows.map(({ label, court, bench }) => [
+    label,
+    ...[...courtDisplayOrder.map(index => court[index]), ...bench].map(id => {
+      const { name, highlighted } = players.get(id);
+      // Quoting alone does not prevent a spreadsheet from evaluating a name as a formula.
+      const safeName = /^[=+@\-\t\r\n＝＋＠－]/u.test(name.trimStart()) ? `'${name}` : name;
+      return includeHighlights && highlighted ? `${safeName} ★` : safeName;
+    }),
+  ]);
+  const csv = [header, ...data].map(row => row.map(csvCell).join(',')).join('\r\n');
+  downloadFile(`\uFEFF${csv}\r\n`, 'text/csv;charset=utf-8', 'sideout-rotations.csv');
+  announce('Rotation sheet downloaded.');
 };
+$('print-sheet').onclick = () => window.print();
+window.addEventListener('beforeprint', renderPrintSheet);
+
 $('rotate').onclick = () => change(rotate(lineup), 'Team rotated one position.');
 $('undo').onclick = () => { if (!history.length) return; lineup = history.pop(); save(); render(); announce('Last change undone.'); };
 $('add-player').onsubmit = event => { event.preventDefault(); const name = $('player-name').value.trim(); if (!name) return; if (lineup.players.length >= 50) { announce('The roster supports up to 50 players.'); return; } const next = structuredClone(lineup), id = crypto.randomUUID(); next.players.push({ id, name }); next.bench.push(id); change(next, `${name} added to the end of the bench.`); $('player-name').value = ''; $('player-name').focus(); };
-$('export').onclick = () => { const url = URL.createObjectURL(new Blob([JSON.stringify(lineup, null, 2)], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = 'sideout-lineup.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); announce('Lineup exported.'); };
+$('export').onclick = () => { downloadFile(JSON.stringify(lineup, null, 2), 'application/json', 'sideout-lineup.json'); announce('Lineup exported.'); };
 $('import').onchange = async event => { const file = event.target.files[0]; if (!file) return; try { if (file.size > 100000) throw new Error(); const data = JSON.parse(await file.text()); if (!validate(data)) throw new Error(); change({ players: data.players.map(p => ({id:p.id,name:p.name.trim(),highlighted:p.highlighted === true})), court: [...data.court], bench: [...data.bench] }, 'Lineup imported. Undo to restore your previous lineup.'); } catch { announce('Could not import. Choose a valid Sideout lineup JSON file with 6–50 players.'); } event.target.value = ''; };
 save(); render();
