@@ -1,6 +1,6 @@
 # Sideout · Volleyball rotation board
 
-A responsive, dependency-free lineup planner built with HTML, CSS, and JavaScript for GitHub Pages.
+A responsive, dependency-free lineup planner built with HTML, CSS, and JavaScript.
 
 ## Use
 
@@ -16,8 +16,11 @@ Upcoming rotations appear below the live court and default to three. Use **Show*
 
 Run `python3 -m http.server 8000` and open http://localhost:8000. Run `npm test` (Node.js 18 or later) for rotation and validation tests. There are no dependencies or build steps. Fonts fall back to system sans-serif when offline.
 
-## GitHub Pages
+## Netlify deployment
 
-In the repository's **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**. Commit and push to `main` or `master`, or manually run the Deploy GitHub Pages workflow. It runs the tests and deploys only the four application files.
+1. Push the deployment configuration to `main` on GitHub.
+2. In your Netlify team dashboard, choose **Add new project → Import an existing project**. Select GitHub, authorize access to `thumbard/volleyball-rotation`, and select the repository.
+3. Choose `main` as the production branch and leave the base directory blank. `netlify.toml` supplies the build command and sets the publish directory to `dist`. The build runs the tests and copies the four app files into `dist`.
+4. Deploy the project and open its `netlify.app` URL. Netlify automatically deploys subsequent pushes to `main`.
 
-Expected URL after deployment: https://thumbard.github.io/volleyball-rotation/
+Before retiring GitHub Pages, export any saved lineup from the old URL and import the JSON on the Netlify URL. Browser storage is tied to the site's origin. Once the new site is working, you can disable the old site under **GitHub → Settings → Pages** by selecting **Deploy from a branch**, choosing **None**, and saving.
