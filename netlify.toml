@@ -1,0 +1,3 @@
+[build]
+  command = "npm test && mkdir -p dist && cp index.html styles.css app.js rotation.js dist/"
+  publish = "dist"
