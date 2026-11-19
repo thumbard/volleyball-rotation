@@ -4,13 +4,15 @@ A responsive, dependency-free lineup planner built with HTML, CSS, and JavaScrip
 
 ## Use
 
-On smaller screens, the roster appears above the live court. Tap its header to collapse or expand it.
+On smaller screens, the roster appears at the top of the planner. Tap its header to collapse or expand it.
 
-The rotation roster controls every assignment. Drag a player's handle to another slot (mouse or touch), or use the up/down arrows. Slots 1–6 are back middle, back left, front left, front middle, front right, and server. Remaining slots form the FIFO bench queue. Courts and the bench display this order without separate assignment controls. Check any number of players in the roster to highlight their jerseys with a gold star on every court. Highlights follow players through rotations and reordering, and are saved and included in lineup exports.
+The rotation roster controls every assignment. Drag a player's handle to another slot (mouse or touch), or use the up/down arrows. Slots 1–6 are back middle, back left, front left, front middle, front right, and server. Remaining slots form the bench queue. Courts and the bench display this order without separate assignment controls. Check any number of players in the roster to highlight their jerseys with a gold star on every court. Highlights follow players through rotations and reordering and are preserved in JSON lineup backups.
 
 Rotation: **bench → back middle → back left → front left → front middle → front right → server → bench**. With no bench, the server moves directly to back middle. Removing a player shifts later roster slots up; a minimum of six players is required.
 
-Upcoming rotations appear below the live court and default to three. Use **Show** to choose a count or **All** to see every unique future lineup before the live lineup repeats. A roster of N players repeats after N rotations, so there are N−1 unique future lineups. Previews update whenever the roster changes. Rotate team advances the live lineup one rotation. Undo restores the previous edit or rotation. The lineup saves automatically in this browser; existing saved and exported lineups remain compatible. Export/import JSON to transfer it between devices.
+Every unique upcoming rotation appears below the live court. A roster of N players repeats after N rotations, so there are N−1 unique future lineups. Previews update whenever the roster changes. Rotate team advances the live lineup one rotation. Undo restores the previous edit or rotation. The lineup saves automatically in this browser; existing saved and exported lineups remain compatible. Export/import JSON to transfer it between devices.
+
+Use **Print rotation sheet** at the top of the planner for a one-page reference with a two-row court diagram for each rotation, beginning with the live lineup as **Rotation #1**. Each diagram shows the full bench underneath, with the next player on the left. Choose **Save as PDF** in your browser’s print dialog to keep a copy. **Download CSV** includes every court and bench slot for the live lineup and all upcoming rotations. Select **Include player highlights** to add stars to the print sheet and CSV.
 
 ## Local development
 

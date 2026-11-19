@@ -1,25 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#163e39"><meta name="description" content="Set your volleyball lineup, manage a FIFO bench, and preview future rotations."><title>Sideout · Volleyball rotation board</title><link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#163e39"><meta name="description" content="Set your volleyball lineup, manage a bench, and preview future rotations."><title>Sideout · Volleyball rotation board</title><link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script>
 </head>
 <body>
 <header class="topbar"><a class="brand" href="./"><span class="brand-icon">◉</span> sideout<span class="brand-dot">.</span></a><span class="header-note">YOUR NEXT ROTATION, SORTED</span></header>
 <main>
 <div class="intro"><div><p class="eyebrow">THE LINEUP PLANNER</p><h1>Find your rhythm.</h1><p class="subtitle">Six on the court. Everyone in the game.</p></div><div class="save-status" id="save-status">● Saved on this device</div></div>
+<div class="rotation-sheet-actions"><button id="print-sheet" class="secondary" type="button">Print rotation sheet</button><button id="export-sheet" class="secondary" type="button">Download CSV</button><label class="sheet-highlight-option"><input id="sheet-highlights" type="checkbox"> Include player highlights</label></div>
 <div class="workspace">
 <aside>
 <details class="panel roster-panel" open><summary class="section-heading roster-summary"><div><p class="eyebrow">MAKE IT YOUR TEAM</p><h2>Rotation order</h2></div><span class="roster-summary-actions"><span id="player-count" class="count"></span><span class="roster-disclosure" aria-hidden="true"></span></span></summary><div class="roster-content"><p class="hint roster-help">Drag the handles or use the arrows. Slots 1–6 fill the court; the rest form the bench queue. Check players to highlight their jerseys in every rotation.</p><ol id="roster" class="roster"></ol><form id="add-player"><label class="sr-only" for="player-name">New player name</label><input id="player-name" placeholder="New player’s name" maxlength="40" required><button class="add-button" aria-label="Add player">+</button></form><div class="file-actions"><button id="export" class="text-button">Export lineup</button><label class="text-button import-label">Import lineup<input id="import" type="file" accept="application/json,.json" class="sr-only"></label></div></div></details>
-<section class="panel bench-panel"><div class="section-heading"><div><p class="eyebrow">READY TO GO</p><h2>The bench <span id="bench-count" class="count"></span></h2></div><span class="small-label">FIRST IN, FIRST OUT</span></div><ol id="bench" class="bench-list"></ol><p class="hint">The first player enters at back middle. The server joins the end of the queue.</p></section>
+<section class="panel bench-panel"><div class="section-heading"><div><p class="eyebrow">READY TO GO</p><h2>The bench <span id="bench-count" class="count"></span></h2></div></div><ol id="bench" class="bench-list"></ol><p class="hint">The first player enters at back middle. The server joins the end of the queue.</p></section>
 
 </aside>
 <section class="board panel" aria-label="Court and rotation controls">
-<div class="section-heading"><div><p class="eyebrow">YOUR HALF OF THE COURT</p><h2 id="view-title">Current lineup</h2></div><span class="badge" id="rotation-badge">LIVE LINEUP</span></div>
+<div class="section-heading"><div><p class="eyebrow">YOUR HALF OF THE COURT</p><h2 id="view-title">Rotation #1</h2></div><span class="badge" id="rotation-badge">LIVE LINEUP</span></div>
 <div class="net"><span>NET / FRONT ROW</span></div><div class="court" id="court"></div><div class="court-caption"><span>↑ Facing the net</span><span>Server plays back right</span></div>
 <div class="actions"><button id="undo" class="secondary" disabled>↶ Undo</button><button id="rotate" class="primary">Rotate team <span>↻</span></button></div><p class="hint" id="preview-hint">Drag players in the roster to set the lineup.</p>
 </section>
-<section class="panel upcoming-panel" aria-label="Upcoming rotations"><div class="section-heading"><div><p class="eyebrow">LOOK AHEAD</p><h2>Upcoming rotations</h2></div><label class="rotation-count-label" for="rotation-count">Show<select id="rotation-count"></select></label></div><p id="cycle-note" class="hint cycle-note"></p><div id="upcoming" class="upcoming"></div></section>
+<section class="panel upcoming-panel" aria-label="Upcoming rotations"><div class="section-heading"><div><p class="eyebrow">LOOK AHEAD</p><h2>Upcoming rotations</h2></div></div><p id="cycle-note" class="hint cycle-note"></p><div id="upcoming" class="upcoming"></div></section>
 </div>
 <section class="rotation-guide"><span class="eyebrow">THE ROTATION</span><p>Bench <b>→</b> Back middle <b>→</b> Back left <b>→</b> Front left <b>→</b> Front middle <b>→</b> Front right <b>→</b> Server <b>→</b> Bench</p></section><p id="announcement" class="announcement" role="status" aria-live="polite"></p>
 </main><footer>Built for the next point.<span>SIDEOUT / ROTATION BOARD</span></footer>
+<section id="print-rotations" aria-label="Rotation sheet"></section>
 </body></html>
